@@ -55,8 +55,16 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
 
 	############################
 	# YOUR IMPLEMENTATION HERE #
-
-
+	while (True):
+		prev_value_function = np.copy(value_function)
+		value_function = np.zeros(nS)
+		for i in np.arange(nS):
+			probability, nextstate, reward, terminal = P[i][policy[i]][0]
+			value_function[i] += probability * reward
+			if not terminal:
+				value_function[i] += gamma * prev_value_function[nextstate]
+		if max(np.fabs(value_function - prev_value_function)) < tol:
+			break	
 	############################
 	return value_function
 
@@ -85,8 +93,14 @@ def policy_improvement(P, nS, nA, value_from_policy, policy, gamma=0.9):
 
 	############################
 	# YOUR IMPLEMENTATION HERE #
-
-
+	for i in np.arange(nS):
+		for j in np.arange(nA):
+			probability, nextstate, reward, terminal = P[i][j][0]
+			temp = probability * reward
+			if not terminal:
+                                temp += gamma * value_from_policy[nextstate]
+			if temp >= new_policy[i]:
+				new_policy[i] = j+1;
 	############################
 	return new_policy
 
@@ -114,8 +128,12 @@ def policy_iteration(P, nS, nA, gamma=0.9, tol=10e-3):
 
 	############################
 	# YOUR IMPLEMENTATION HERE #
-
-
+	while (True):
+		value_function = policy_evaluation(P, nS, nA, policy, gamma, tol)
+		new_policy = policy_improvement(P, nS, nA, value_function, policy, gamma);
+		if (new_policy == policy).all():
+			break
+		policy = new_policy
 	############################
 	return value_function, policy
 
@@ -191,9 +209,9 @@ if __name__ == "__main__":
 	V_pi, p_pi = policy_iteration(env.P, env.nS, env.nA, gamma=0.9, tol=1e-3)
 	render_single(env, p_pi, 100)
 
-	print("\n" + "-"*25 + "\nBeginning Value Iteration\n" + "-"*25)
+#	print("\n" + "-"*25 + "\nBeginning Value Iteration\n" + "-"*25)
 
-	V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, tol=1e-3)
-	render_single(env, p_vi, 100)
+#	V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, tol=1e-3)
+#	render_single(env, p_vi, 100)
 
 
