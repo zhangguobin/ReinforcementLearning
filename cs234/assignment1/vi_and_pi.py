@@ -13,7 +13,7 @@ the parameters P, nS, nA, gamma are defined as follows:
 
 	P: nested dictionary
 		From gym.core.Environment
-		For each pair of states in [1, nS] and actions in [1, nA], P[state][action] is a
+		For each pair of states in [0, nS - 1] and actions in [0, nA - 1], P[state][action] is a
 		tuple of the form (probability, nextstate, reward, terminal) where
 			- probability: float
 				the probability of transitioning from "state" to "nextstate" with "action"
@@ -59,10 +59,11 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
 		prev_value_function = np.copy(value_function)
 		value_function = np.zeros(nS)
 		for i in np.arange(nS):
-			probability, nextstate, reward, terminal = P[i][policy[i]][0]
-			value_function[i] += probability * reward
-			if not terminal:
-				value_function[i] += gamma * prev_value_function[nextstate]
+			for j in np.arange(len(P[i][policy[i]])):
+				probability, nextstate, reward, terminal = P[i][policy[i]][j]
+				value_function[i] += probability * reward
+				if not terminal:
+					value_function[i] += probability * gamma * prev_value_function[nextstate]
 		# print(policy_evaluation.__name__, value_function)
 		if max(np.fabs(value_function - prev_value_function)) < tol:
 			break	
@@ -96,14 +97,17 @@ def policy_improvement(P, nS, nA, value_from_policy, policy, gamma=0.9):
 	# YOUR IMPLEMENTATION HERE #
 	for i in np.arange(nS):
 		max_value = value_from_policy[i]
+		new_policy[i] = policy[i]
 		for j in np.arange(nA):
-			probability, nextstate, reward, terminal = P[i][j][0]
-			temp = probability * reward
-			if not terminal:
-                                temp += gamma * value_from_policy[nextstate]
-			if temp >= max_value:
+			temp = 0.0
+			for k in np.arange(len(P[i][j])):
+				probability, nextstate, reward, terminal = P[i][j][k]
+				temp += probability * reward
+				if not terminal:
+				        temp += probability * gamma * value_from_policy[nextstate]
+			if temp > max_value:
 				max_value = temp
-				new_policy[i] = j;
+				new_policy[i] = j
 	############################
 	return new_policy
 
@@ -207,8 +211,8 @@ def render_single(env, policy, max_steps=100):
 if __name__ == "__main__":
 
 	# comment/uncomment these lines to switch between deterministic/stochastic environments
-	env = gym.make("Deterministic-4x4-FrozenLake-v0")
-	# env = gym.make("Stochastic-4x4-FrozenLake-v0")
+	# env = gym.make("Deterministic-4x4-FrozenLake-v0")
+	env = gym.make("Stochastic-4x4-FrozenLake-v0")
 
 	print("\n" + "-"*25 + "\nBeginning Policy Iteration\n" + "-"*25)
 
