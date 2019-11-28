@@ -55,7 +55,7 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
 
 	############################
 	# YOUR IMPLEMENTATION HERE #
-	while (True):
+	while True:
 		prev_value_function = np.copy(value_function)
 		value_function = np.zeros(nS)
 		for i in np.arange(nS):
@@ -135,7 +135,7 @@ def policy_iteration(P, nS, nA, gamma=0.9, tol=10e-3):
 
 	############################
 	# YOUR IMPLEMENTATION HERE #
-	while (True):
+	while True:
 		# print(policy_iteration.__name__)
 		value_function = policy_evaluation(P, nS, nA, policy, gamma, tol)
 		# print(value_function)
@@ -169,8 +169,22 @@ def value_iteration(P, nS, nA, gamma=0.9, tol=1e-3):
 	policy = np.zeros(nS, dtype=int)
 	############################
 	# YOUR IMPLEMENTATION HERE #
-
-
+	while True:
+		prev_value_function = np.copy(value_function)
+		value_function = np.zeros(nS)
+		for i in np.arange(nS):
+			for j in np.arange(nA):
+				temp = 0.0
+				for k in np.arange(len(P[i][j])):
+					probability, nextstate, reward, terminal = P[i][j][k]
+					temp += probability * reward
+					if not terminal:
+						temp += probability * gamma * prev_value_function[nextstate]
+				if temp > value_function[i]:
+					value_function[i] = temp
+					policy[i] = j
+		if max(np.fabs(value_function - prev_value_function)) < tol:
+			break
 	############################
 	return value_function, policy
 
@@ -219,9 +233,9 @@ if __name__ == "__main__":
 	V_pi, p_pi = policy_iteration(env.P, env.nS, env.nA, gamma=0.9, tol=1e-3)
 	render_single(env, p_pi, 100)
 
-#	print("\n" + "-"*25 + "\nBeginning Value Iteration\n" + "-"*25)
+	print("\n" + "-"*25 + "\nBeginning Value Iteration\n" + "-"*25)
 
-#	V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, tol=1e-3)
-#	render_single(env, p_vi, 100)
+	V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, tol=1e-3)
+	render_single(env, p_vi, 100)
 
 
