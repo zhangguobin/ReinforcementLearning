@@ -63,6 +63,7 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
 			value_function[i] += probability * reward
 			if not terminal:
 				value_function[i] += gamma * prev_value_function[nextstate]
+		# print(policy_evaluation.__name__, value_function)
 		if max(np.fabs(value_function - prev_value_function)) < tol:
 			break	
 	############################
@@ -94,13 +95,15 @@ def policy_improvement(P, nS, nA, value_from_policy, policy, gamma=0.9):
 	############################
 	# YOUR IMPLEMENTATION HERE #
 	for i in np.arange(nS):
+		max_value = value_from_policy[i]
 		for j in np.arange(nA):
 			probability, nextstate, reward, terminal = P[i][j][0]
 			temp = probability * reward
 			if not terminal:
                                 temp += gamma * value_from_policy[nextstate]
-			if temp >= new_policy[i]:
-				new_policy[i] = j+1;
+			if temp >= max_value:
+				max_value = temp
+				new_policy[i] = j;
 	############################
 	return new_policy
 
@@ -129,8 +132,11 @@ def policy_iteration(P, nS, nA, gamma=0.9, tol=10e-3):
 	############################
 	# YOUR IMPLEMENTATION HERE #
 	while (True):
+		# print(policy_iteration.__name__)
 		value_function = policy_evaluation(P, nS, nA, policy, gamma, tol)
+		# print(value_function)
 		new_policy = policy_improvement(P, nS, nA, value_function, policy, gamma);
+		# print(policy_improvement.__name__, new_policy)
 		if (new_policy == policy).all():
 			break
 		policy = new_policy
